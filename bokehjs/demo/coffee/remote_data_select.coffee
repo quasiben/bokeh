@@ -33,13 +33,9 @@ require(['main'], (Bokeh) ->
   plot1 = Bokeh.Plotting.make_plot(
     [],
     source, _.extend({title: "Plot 1", yrange: ydr1}, options))
-
+  '''
   column_tree = {
-    trader1____Agriculture: [
-     "trader1____largeTradeSizeWithTrendingNetExposureAgriculture.similarity",
-     "trader1____AgricultureAvgTradeSizeAnomalySeverity",
-     "trader1____AgricultureMaxQtyAnomalySeverity",
-     "trader1____AgricultureRunningNetAnomalySeverity"],
+    trader1____Agriculture:
 
     trader1____Energy: [
      "trader1____largeTradeSizeWithTrendingNetExposureEnergy.similarity",
@@ -106,9 +102,16 @@ require(['main'], (Bokeh) ->
      "trader2____MetalsAvgTradeSizeAnomalySeverity",
      "trader2____MetalsMaxQtyAnomalySeverity",
      "trader2____MetalsRunningNetAnomalySeverity"]}
+  '''
+
   remote_data_select_tool = Bokeh.Collections('RemoteDataSelectTool').create(
     api_endpoint: "http://localhost:5000/", #glyph_specs: [scatter1, scatter2, scatter3],
-    control_el:"#selector_div", column_tree:column_tree,
+    control_el:"#selector_div" 
+    columns:  [
+     "trader1____largeTradeSizeWithTrendingNetExposureAgriculture.similarity",
+     "trader1____AgricultureAvgTradeSizeAnomalySeverity",
+     "trader1____AgricultureMaxQtyAnomalySeverity",
+     "trader1____AgricultureRunningNetAnomalySeverity"],
     tools: ['zoom,pan'],  data_source:source)
 
   existing_tools =   plot1.get_obj('tools')
