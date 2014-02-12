@@ -38,13 +38,15 @@ define [
 
     template: """
       <div class='column_select'>
-        <ul class='column_item'>
+        <h3><%= title %> </h3>
+        <ul class='column_items'>
           <% _.each(columns, function(column_data){ %>
-            <li class='column_item' > <%= column_data %> 
+            <li class='column_item' > 
               <input  class='column_check' 
                       name='<%= column_data %>' 
                       <%= (!(_.has(renderer_map,column_data, true)) || 'checked') %> 
                       type='checkbox' />
+              <label> <%= column_data %> </label>
             </li>
           <% }) %>
         </div>
@@ -138,7 +140,6 @@ define [
         selected_columns: [],
         renderer_map: {},
         api_endpoint: "",
-
         glyph_specs: [
           _.defaults({fill_color: 'orange', line_color: 'orange'}, circle_base),
           _.defaults({fill_color: 'blue', line_color: 'blue'}, rect_base),
