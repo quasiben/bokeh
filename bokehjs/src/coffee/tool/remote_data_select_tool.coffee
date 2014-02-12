@@ -21,7 +21,7 @@ define [
       "click input.column_check": "update_selected_columns"
 
     eventGeneratorClass: ButtonEventGenerator
-    evgen_options: { buttonText:" " }
+    evgen_options: { buttonText:"Data Select " }
     toolType: "RemoteDataSelectTool"
     tool_events: {
        activated: "_activated"
