@@ -5,7 +5,8 @@ define [
   "backbone",
   "./tool",
   "./event_generators",
-], (_, $, Backbone, Tool, EventGenerators) ->
+  "renderer/annotation/legend",
+], (_, $, Backbone, Tool, EventGenerators, Legend) ->
 
   ButtonEventGenerator = EventGenerators.ButtonEventGenerator
 
@@ -20,7 +21,7 @@ define [
       "click input.column_check": "update_selected_columns"
 
     eventGeneratorClass: ButtonEventGenerator
-    evgen_options: { buttonText:"Remote Data Select" }
+    evgen_options: { buttonText:" " }
     toolType: "RemoteDataSelectTool"
     tool_events: {
        activated: "_activated"
@@ -64,6 +65,7 @@ define [
       @render()
 
     unrender_column: (rname) ->
+  
       renderer = @model.get('renderer_map')[rname]
       pview = @plot_view
       pmodel = @plot_view.model
@@ -78,6 +80,7 @@ define [
       rmap = @model.get('renderer_map')
       delete rmap[rname]
       console.log(rname)
+      @_reset_legends()
 
     _add_renderer: (renderer_name) ->
       Plotting = require("common/plotting")
@@ -115,13 +118,48 @@ define [
           yr: {start: y_min2, end: y_max2}})
         
         pview.request_render()
-        @model.get('renderer_map')[renderer_name] = glyphs[0])
+        @model.get('renderer_map')[renderer_name] = glyphs[0]
+        @_reset_legends())
+  
 
     inc_glyph_spec_pointer: () ->
       if @model.get('glyph_spec_pointer') == ((@model.get('glyph_specs').length) - 1)
         @model.set('glyph_spec_pointer', 0)
       else
         @model.set('glyph_spec_pointer', @model.get('glyph_spec_pointer') + 1)
+
+    _unrender_legend: () ->
+      
+      renderer = @model.get('legend_renderer')
+      if not renderer
+        return
+      pview = @plot_view
+      pmodel = @plot_view.model
+      existing_renderers = pmodel.get('renderers')
+      
+      modified_renderers = []
+      for r in existing_renderers
+        if not (r.id == renderer.id)
+          modified_renderers.push(r)
+      pmodel.set('renderers', modified_renderers)
+
+
+    _reset_legends : () ->
+      pview = @plot_view
+      pmodel = @plot_view.model
+      @_unrender_legend()
+      legends = {}
+      _.each(@model.get('renderer_map'), (r, rname)->
+        legends[rname] = r;)
+      legend_renderer = Legend.Collection.create({
+        parent:pmodel.ref(),
+        plot: pmodel.ref(),
+        orientation:"top_right",
+        legends:legends})
+
+      pmodel.add_renderers([legend_renderer.ref()])
+      @model.set('legend_renderer', legend_renderer)
+      pview.request_render()      
             
   class RemoteDataSelectTool extends Tool.Model
     default_view: RemoteDataSelectToolView
@@ -140,6 +178,7 @@ define [
         selected_columns: [],
         renderer_map: {},
         api_endpoint: "",
+        legend_renderer : null
         glyph_specs: [
           _.defaults({fill_color: 'orange', line_color: 'orange'}, circle_base),
           _.defaults({fill_color: 'blue', line_color: 'blue'}, rect_base),
