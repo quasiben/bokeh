@@ -131,14 +131,12 @@ define [
         return
       pview = @plot_view
       pmodel = @plot_view.model
-
       existing_renderers = pmodel.get('renderers')
       modified_renderers = []
       for r in existing_renderers
         if not (r.id == renderer.id)
           modified_renderers.push(r)
       pmodel.set('renderers', modified_renderers)
-      window.prenderers = pview.renderers
       console.log(renderer.id)
 
     _reset_legends : () ->

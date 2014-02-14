@@ -17,18 +17,26 @@ window.render_trader_plot = (Bokeh, api_endpoint, plot_title, plot_div, selector
 
   options = {
     dims: [700, 600], xrange: xdr, yrange: ydr1, title: plot_title
-    xaxes: false, yaxes: "min", legend:true,
+    xaxes: false, yaxes: false, legend:true,
     tools: false}
 
   
   plot1 = Bokeh.Plotting.make_plot([], source, options)
-  axis = Bokeh.Collections('DatetimeAxis').create(
+  x_axis = Bokeh.Collections('DatetimeAxis').create(
     dimension: 0
     axis_label: 'Datetime'
     location: 'bottom',
     parent: plot1.ref()
     plot: plot1.ref())
-  plot1.add_renderers([axis.ref()])
+  y_axis = Bokeh.Collections('LinearAxis').create(
+    dimension: 1
+    axis_label: 'severity'
+    location: 'min'
+    parent: plot1.ref()
+    plot: plot1.ref())
+
+
+  plot1.add_renderers([x_axis.ref(), y_axis.ref()])
 
   remote_data_select_tool = Bokeh.Collections('RemoteDataSelectTool').create(
     control_el:selector_div,
