@@ -40,7 +40,7 @@ define [
       else
         @legends = @mget('legends')
         @legend_names =_.keys(@mget('legends'))
-      @calc_dims()
+
 
     delegateEvents: (events) ->
       super(events)
@@ -89,6 +89,14 @@ define [
       @box_coords = [x,y]
 
     render: () ->
+      if @mget('legend_names')
+        @legend_names = @mget('legend_names')
+      else
+        @legends = @mget('legends')
+        @legend_names =_.keys(@mget('legends'))
+        
+      console.log('legend_names', @legend_names)
+      @calc_dims()
       ctx = @plot_view.ctx
       ctx.save()
 
@@ -114,7 +122,8 @@ define [
         ctx.fillText(legend_name, x, y)
         for renderer in @model.resolve_ref(@legends[legend_name])
           view = @plot_view.renderers[renderer.id]
-          view.draw_legend(ctx, x1,x2,y1,y2)
+          if view?
+            view.draw_legend(ctx, x1,x2,y1,y2)
 
       ctx.restore()
 

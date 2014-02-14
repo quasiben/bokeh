@@ -16,7 +16,7 @@ define [
       @$el = @mget('control_el')
       @$el = $(@$el)
       super(options)
-
+      @legend_count = 0
     events:
       "click input.column_check": "update_selected_columns"
 
@@ -59,30 +59,27 @@ define [
       rname =  $(e.currentTarget).attr('name')
       add = $(e.currentTarget).is(":checked")
       if add
-        @_add_renderer(rname)
+        gspecs =  @model.get('glyph_specs')
+        gspec_pointer = @model.get('glyph_spec_pointer')
+        @inc_glyph_spec_pointer()
+        @_add_renderer(rname, gspecs)
+        @_add_renderer(rname, _.defaults({}, gspecs, {type:'line'}))
+        @_add_renderer(rname, _.defaults({}, gspecs, {type:'rects'}))
       else
         @unrender_column(rname)
       @render()
 
+
     unrender_column: (rname) ->
-  
-      renderer = @model.get('renderer_map')[rname]
-      pview = @plot_view
-      pmodel = @plot_view.model
-
-      existing_renderers = pmodel.get('renderers')
-      modified_renderers = []
-      for r in existing_renderers
-        if not (r.id == renderer.id)
-          modified_renderers.push(r)
-      pmodel.set('renderers', modified_renderers)
-      pview.request_render()
       rmap = @model.get('renderer_map')
+      renderer = rmap[rname]
       delete rmap[rname]
-      console.log(rname)
       @_reset_legends()
+      @unrender_(renderer)
 
-    _add_renderer: (renderer_name) ->
+
+
+    _add_renderer: (renderer_name, glyph_specs) ->
       Plotting = require("common/plotting")
       pview = @plot_view
       pmodel = @plot_view.model
@@ -91,15 +88,15 @@ define [
 
       x_range = pmodel.get_obj("x_range")
       y_range = pmodel.get_obj("y_range")
+      gspecs =  @model.get('glyph_specs')
+      gspec_pointer = @model.get('glyph_spec_pointer')
+
       data_source.remote_add_column(renderer_name, =>
         data = data_source.get('data')
-        gspecs =  @model.get('glyph_specs')
-        gspec_pointer = @model.get('glyph_spec_pointer')
 
         scatter2 = gspecs[gspec_pointer]
         scatter2.x = 'index'
         scatter2.y = renderer_name
-        @inc_glyph_spec_pointer()
         glyphs = Plotting.create_glyphs(pmodel, scatter2, [data_source])
         console.log(glyphs)
         pmodel.add_renderers(g.ref() for g in glyphs)
@@ -117,10 +114,10 @@ define [
           xr: {start: x_min, end: x_max },
           yr: {start: y_min2, end: y_max2}})
         
-        pview.request_render()
+
         @model.get('renderer_map')[renderer_name] = glyphs[0]
-        @_reset_legends())
-  
+        @_reset_legends()
+        pview.request_render()  )
 
     inc_glyph_spec_pointer: () ->
       if @model.get('glyph_spec_pointer') == ((@model.get('glyph_specs').length) - 1)
@@ -128,37 +125,34 @@ define [
       else
         @model.set('glyph_spec_pointer', @model.get('glyph_spec_pointer') + 1)
 
-    _unrender_legend: () ->
-      
-      renderer = @model.get('legend_renderer')
-      if not renderer
+
+    unrender_: (renderer) ->
+      if not renderer?
         return
       pview = @plot_view
       pmodel = @plot_view.model
+
       existing_renderers = pmodel.get('renderers')
-      
       modified_renderers = []
       for r in existing_renderers
         if not (r.id == renderer.id)
           modified_renderers.push(r)
       pmodel.set('renderers', modified_renderers)
-
+      window.prenderers = pview.renderers
+      console.log(renderer.id)
 
     _reset_legends : () ->
+      @legend_count += 1
       pview = @plot_view
       pmodel = @plot_view.model
-      @_unrender_legend()
+      for r in  pmodel.get('renderers')
+        if r.type == 'Legend'
+          existing_legend = pmodel.resolve_ref(r)
       legends = {}
       _.each(@model.get('renderer_map'), (r, rname)->
-        legends[rname] = r;)
-      legend_renderer = Legend.Collection.create({
-        parent:pmodel.ref(),
-        plot: pmodel.ref(),
-        orientation:"top_right",
-        legends:legends})
+        legends[rname] = [r.ref()];)
+      existing_legend.set('legends', legends)
 
-      pmodel.add_renderers([legend_renderer.ref()])
-      @model.set('legend_renderer', legend_renderer)
       pview.request_render()      
             
   class RemoteDataSelectTool extends Tool.Model
@@ -167,7 +161,7 @@ define [
 
     defaults: () ->
       rect_base = {
-        width: 5, type: 'rect', width_units: 'screen', height: 5,
+        width: 5, type: 'circle', width_units: 'screen', height: 5, size:5,
         height_units: 'screen', fill_color: 'blue', line_color: 'blue'}
       circle_base = {
         type:'line', radius:5, radius_units:'screen',
