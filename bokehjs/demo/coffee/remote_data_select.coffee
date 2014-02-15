@@ -48,6 +48,9 @@ window.render_trader_plot = (Bokeh, api_endpoint, plot_title, plot_div, selector
   plot1.set_obj('tools', existing_tools)
   Bokeh.Plotting.show(plot1, $(plot_div))
 
+  console.log(remote_data_select_tool)
+  return remote_data_select_tool
+
 if require?
   require(['main'], (Bokeh) ->
     render_trader_plot(Bokeh, "http://localhost:5000/", "Trader1 metrics", "#plot_target",

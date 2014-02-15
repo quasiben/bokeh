@@ -17,6 +17,12 @@ define [
       @$el = $(@$el)
       super(options)
       @legend_count = 0
+      @model.on('change', @model_change, @)
+
+    model_change : (a,b,c) ->
+      console.log('asdf')
+      @render()
+
     events:
       "click input.column_check": "update_selected_columns"
 
