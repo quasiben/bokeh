@@ -79,8 +79,8 @@ define [
             gspecs =  @model.get('glyph_specs')
             gspec_pointer = @model.get('glyph_spec_pointer')
             @inc_glyph_spec_pointer()
-            @_add_renderer(colName, gspecs)
-            #@_add_renderer(colName, _.defaults({}, gspecs, {type:'line'}))
+            #@_add_renderer(colName, gspecs)
+            @_add_renderer(colName, _.defaults({}, gspecs, {type:'line'}))
             #@_add_renderer(colName, _.defaults({}, gspecs, {type:'rects'}))
           
           else
@@ -98,15 +98,15 @@ define [
         modified_column.rendered = true
       else    
         modified_column.rendered = false
-      @model.set('columns', new_columns, options)
-
+      @model.set('columns', new_columns)
 
     unrender_column: (rname) ->
       rmap = @model.get('renderer_map')
-      renderer = rmap[rname]
+      renderers = rmap[rname]
       delete rmap[rname]
       @_reset_legends()
-      @unrender_(renderer)
+      for r in renderers
+        @unrender_(r)
 
     _add_renderer: (renderer_name, glyph_specs) ->
       Plotting = require("common/plotting")
@@ -123,9 +123,12 @@ define [
         scatter2 = gspecs[gspec_pointer]
         scatter2.x = 'index'
         scatter2.y = renderer_name
-        glyphs = Plotting.create_glyphs(pmodel, scatter2, [data_source])
+
+        orig_glyphs = Plotting.create_glyphs(pmodel, scatter2, [data_source])
         console.log(glyphs)
+        glyphs = orig_glyphs.concat(Plotting.create_glyphs(pmodel, _.extend({}, scatter2, {type:'line'}), [data_source]))
         pmodel.add_renderers(g.ref() for g in glyphs)
+
 
         x_min = Math.min.apply(data.index, data.index)
         x_max = Math.max.apply(data.index, data.index)
@@ -141,7 +144,7 @@ define [
           yr: {start: y_min2, end: y_max2}})
         
 
-        @model.get('renderer_map')[renderer_name] = glyphs[0]
+        @model.get('renderer_map')[renderer_name] = glyphs
         @_reset_legends()
         pview.request_render()  )
 
@@ -173,8 +176,8 @@ define [
         if r.type == 'Legend'
           existing_legend = pmodel.resolve_ref(r)
       legends = {}
-      _.each(@model.get('renderer_map'), (r, rname)->
-        legends[rname] = [r.ref()];)
+      _.each(@model.get('renderer_map'), (renderers, rname)->
+        legends[rname] = (r.ref() for r in renderers));
       existing_legend.set('legends', legends)
 
       pview.request_render()      
