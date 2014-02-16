@@ -55,8 +55,10 @@ if require?
   require(['main'], (Bokeh) ->
     render_trader_plot(Bokeh, "http://localhost:5000/", "Trader1 metrics", "#plot_target",
       "#selector_div",
-      ["trader1____largeTradeSizeWithTrendingNetExposureAgriculture.similarity",
-       "trader1____AgricultureAvgTradeSizeAnomalySeverity",
-       "trader1____AgricultureMaxQtyAnomalySeverity",
-       "trader1____AgricultureRunningNetAnomalySeverity"],
+      [{colName:"trader1____largeTradeSizeWithTrendingNetExposureAgriculture.similarity", rendered:false},
+       {colName:"trader1____AgricultureAvgTradeSizeAnomalySeverity", rendered:false},
+       {colName:"trader1____AgricultureMaxQtyAnomalySeverity", rendered:false},
+       {colName:"trader1____AgricultureRunningNetAnomalySeverity", rendered:false}],
       "Chose metrics"))
+
+

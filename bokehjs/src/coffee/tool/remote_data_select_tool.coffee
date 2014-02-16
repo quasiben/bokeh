@@ -17,10 +17,17 @@ define [
       @$el = $(@$el)
       super(options)
       @legend_count = 0
-      @model.on('change', @model_change, @)
+      @model.on('change', @render, @)
+      @model.on('change:columns', @update_rendering, @)
 
-    model_change : (a,b,c) ->
-      console.log('asdf')
+
+    _activated: (e) ->
+
+      new_cols = []
+      for c in  @mget_obj('data_source').get('columns')
+        new_cols.push({colName:c, renderered:false})
+      @mset('columns', new_cols)
+      console.log("_activated 1212")
       @render()
 
     events:
@@ -33,9 +40,6 @@ define [
        activated: "_activated"
     }
 
-    _activated: (e) ->
-      @mset('columns', @mget_obj('data_source').get('columns'))
-      @render()
 
     render: ->
       @template_context = _.template(@template)
@@ -50,30 +54,51 @@ define [
           <% _.each(columns, function(column_data){ %>
             <li class='column_item' > 
               <input  class='column_check' 
-                      name='<%= column_data %>' 
-                      <%= (!(_.has(renderer_map,column_data, true)) || 'checked') %> 
+                      name='<%= column_data.colName %>' 
+                      <%= (! column_data.rendered || 'checked') %> 
                       type='checkbox' />
-              <label> <%= column_data %> </label>
+              <label> <%= column_data.colName %> </label>
             </li>
           <% }) %>
         </div>
       """
+    update_rendering: (model, new_columns, options) ->
+      old_columns = model.previous('columns')
+      new_colNames = _.pluck(new_columns, 'colName')
+      old_colNames = _.pluck(old_columns, 'colName')
+      removed = _.difference(old_colNames, new_colNames)
+
+      for r in removed
+
+        @unrender_column(r)
+
+      for col in new_columns
+        if !(_.findWhere(old_columns, col))
+          colName = col.colName          
+          if col.rendered
+            gspecs =  @model.get('glyph_specs')
+            gspec_pointer = @model.get('glyph_spec_pointer')
+            @inc_glyph_spec_pointer()
+            @_add_renderer(colName, gspecs)
+            #@_add_renderer(colName, _.defaults({}, gspecs, {type:'line'}))
+            #@_add_renderer(colName, _.defaults({}, gspecs, {type:'rects'}))
+          
+          else
+            @unrender_column(colName)
+      @render()
 
     update_selected_columns: (e) ->
-
-    
       rname =  $(e.currentTarget).attr('name')
       add = $(e.currentTarget).is(":checked")
+      old_columns = @model.get('columns')
+      # we need to copy this otherwise previous won't make any sense
+      new_columns = _.map(old_columns, (c) -> return _.extend({}, c))
+      modified_column = _.findWhere(new_columns, {colName:rname})
       if add
-        gspecs =  @model.get('glyph_specs')
-        gspec_pointer = @model.get('glyph_spec_pointer')
-        @inc_glyph_spec_pointer()
-        @_add_renderer(rname, gspecs)
-        @_add_renderer(rname, _.defaults({}, gspecs, {type:'line'}))
-        @_add_renderer(rname, _.defaults({}, gspecs, {type:'rects'}))
-      else
-        @unrender_column(rname)
-      @render()
+        modified_column.rendered = true
+      else    
+        modified_column.rendered = false
+      @model.set('columns', new_columns, options)
 
 
     unrender_column: (rname) ->
@@ -83,20 +108,15 @@ define [
       @_reset_legends()
       @unrender_(renderer)
 
-
-
     _add_renderer: (renderer_name, glyph_specs) ->
       Plotting = require("common/plotting")
       pview = @plot_view
       pmodel = @plot_view.model
-
       data_source = @model.get_obj('data_source')
-
       x_range = pmodel.get_obj("x_range")
       y_range = pmodel.get_obj("y_range")
       gspecs =  @model.get('glyph_specs')
       gspec_pointer = @model.get('glyph_spec_pointer')
-
       data_source.remote_add_column(renderer_name, =>
         data = data_source.get('data')
 
