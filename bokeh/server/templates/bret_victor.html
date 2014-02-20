@@ -13,52 +13,42 @@
   <script src="/bokehjs/static/demo/js/bret_victor_controller.js"></script>
 </head>
 <body ng-controller="PhoneListCtrl">
-    <select ng-model="fill_color" ng-options="fc.displayVal for fc in colors"></select>
+
+
+
+
 
 
 
   <pre>
-    rects = {
+    var rects = {
       type: 'annular_wedge',
-      x: 'x'
-      y: 'y'
-      size:          .2
-      inner_radius:  .1
-      outer_radius:  .20
-      start_angle:   .5
-      end_angle:   [[end_angle]]
-      line_alpha: 1
-      fill_color: [[fill_color.displayVal]]
-      #line_color: 'color'
+      x: 'x',
+      y: 'y',
+      size:         <input ng-model="size">
+      inner_radius:  <input ng-model="inner_radius">
+      outer_radius:  <input ng-model="outer_radius">
+      start_angle:   <input ng-model="start_angle">
+      end_angle:      <input ng-model="end_angle">
+      stroke_alpha:     <input ng-model="stroke_alpha">
+      fill_alpha:     <input ng-model="fill_alpha">
+      fill_color:     <select ng-model="fill_color" ng-options="fc.displayVal for fc in colors"></select>
+      line_color:     <select ng-model="line_color" ng-options="fc.displayVal for fc in colors"></select>
       do_fill:true
     }
+    options = {
+      title: "Annular Wedge Demo"
+      dims: [800, 500]
+      xaxes: "min"
+      yaxes: "min"
+      tools: "pan,zoom,resize,preview,select"
+      legend: false
+    }
+
+    plot = Bokeh.Plotting.make_plot(rects, data, options)
+    Bokeh.Plotting.show(plot)
 
 </pre>
-<pre>
-
-   line_color:  [[line_color.displayVal]]
-</pre>
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span2">
-        <!--Sidebar content-->
-
-        Search: <input ng-model="query">
-
-      </div>
-      <div class="span10">
-        <!--Body content-->
-
-        <ul class="phones">
-          <li ng-repeat="phone in phones | filter:query">
-            [[phone.name]]
-            <p>[[phone.snippet]]</p>
-          </li>
-        </ul>
-
-      </div>
-    </div>
-  </div>
 
 </body>
 </html>
