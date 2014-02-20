@@ -22,7 +22,7 @@
 
   <pre>
     var rects = {
-      type: 'annular_wedge',
+      type: <select ng-model="glyph_type" ng-options="g for g in glyph_types"></select>
       x: 'x',
       y: 'y',
       size:         <input ng-model="size">

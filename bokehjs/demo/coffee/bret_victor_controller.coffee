@@ -13,7 +13,10 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
     {displayVal:"'green'", actualVal:'green'}
   ]
 
-  $scope.size = .1
+  $scope.glyph_types = ['annular_wedge', 'triangle', 'square_cross']
+  $scope.glyph_type = $scope.glyph_types[1];
+
+  $scope.size =  10
   $scope.inner_radius = .1
   $scope.outer_radius = .5
 
@@ -45,7 +48,7 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
     }
 
     rects = {
-      type: 'annular_wedge',
+      type: $scope.glyph_type,
       x: 'x'
       y: 'y'
       size:          $scope.size
@@ -74,13 +77,23 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
     annular_wedge = plot.resolve_ref(plot.get('renderers')[0])
     update_glyphspec = (update_params) ->
       g_spec = annular_wedge.get('glyphspec')
-      # g_spec.outer_radus = .8
-      # g_spec.fill_color = 'red'
       new_glyphspec =  _.extend({}, g_spec, update_params)
-      console.log('setting new glyphspec', new_glyphspec)
+      console.log('annular_wedge.id', annular_wedge.id)
       annular_wedge.set('glyphspec', new_glyphspec)
 
+
+    $scope.$watch('glyph_type',  ->
+      g_spec = annular_wedge.get('glyphspec')
+      g_spec.type=$scope.glyph_type
+      dsource = annular_wedge.get_obj('data_source')
+      new_glyph = Bokeh.Plotting.create_glyphs(plot, g_spec, [dsource], null)[0]
+      
+      plot.remove_renderer(annular_wedge.ref())
+      plot.add_renderers([new_glyph.ref()])
+      annular_wedge = new_glyph)
+    
     $scope.$watch('size',  -> update_glyphspec({size:parseFloat($scope.size)}))
+
     $scope.$watch('inner_radius',  -> update_glyphspec({inner_radius:parseFloat($scope.inner_radius)}))
     $scope.$watch('outer_radius',  -> update_glyphspec({outer_radius:parseFloat($scope.outer_radius)}))
 

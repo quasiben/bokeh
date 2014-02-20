@@ -439,6 +439,16 @@ define [
       renderers = renderers.concat(new_renderers)
       @set('renderers', renderers)
 
+    remove_renderer: (to_remove) ->
+      renderers = @get('renderers')
+      new_renderers = []
+      for r in renderers
+        if r.id == to_remove.id
+          continue
+        else
+          new_renderers.push(r)
+      @set('renderers', new_renderers)
+
     parent_properties: [
       'background_fill',
       'border_fill',
