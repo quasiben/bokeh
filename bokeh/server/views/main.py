@@ -316,3 +316,6 @@ def embed_js():
 
 
 
+@bokeh_app.route("/bokeh/bret_victor")
+def bret_victor():
+    return render_template('bret_victor.html')
