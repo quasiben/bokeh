@@ -3,8 +3,9 @@ define [
   "underscore",
   "common/has_parent",
   "common/plot_widget",
-  "renderer/properties"
-], (_, HasParent, PlotWidget, Properties) ->
+  "renderer/properties",
+  "common/safebind",
+], (_, HasParent, PlotWidget, Properties, safebind) ->
 
   class GlyphView extends PlotWidget
 
@@ -12,6 +13,10 @@ define [
       super(options)
 
       @need_set_data = true
+      @setup_glyphprops()
+      safebind(this, @model, 'change', @setup_glyphprops)
+      
+    setup_glyphprops : (a,b,c) ->
 
       @glyph_props = @init_glyph(@mget('glyphspec'))
 
@@ -29,6 +34,7 @@ define [
         @have_selection_props = true
       else
         @nonselection_glyphprops = @glyph_props
+      @have_new_data = true
 
     init_glyph: (glyphspec) ->
       props = {}

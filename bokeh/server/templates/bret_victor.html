@@ -13,7 +13,31 @@
   <script src="/bokehjs/static/demo/js/bret_victor_controller.js"></script>
 </head>
 <body ng-controller="PhoneListCtrl">
+    <select ng-model="fill_color" ng-options="fc.displayVal for fc in colors"></select>
 
+
+
+  <pre>
+    rects = {
+      type: 'annular_wedge',
+      x: 'x'
+      y: 'y'
+      size:          .2
+      inner_radius:  .1
+      outer_radius:  .20
+      start_angle:   .5
+      end_angle:   [[end_angle]]
+      line_alpha: 1
+      fill_color: [[fill_color.displayVal]]
+      #line_color: 'color'
+      do_fill:true
+    }
+
+</pre>
+<pre>
+
+   line_color:  [[line_color.displayVal]]
+</pre>
   <div class="container-fluid">
     <div class="row-fluid">
       <div class="span2">
