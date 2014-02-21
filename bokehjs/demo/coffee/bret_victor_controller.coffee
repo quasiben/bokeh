@@ -10,7 +10,8 @@ bretVictorApp.config(($interpolateProvider) ->
 
 bretVictorApp.controller('PhoneListCtrl', ($scope) ->
   $scope.colors = [{displayVal:"'red'", actualVal:'red'},  {displayVal:"'blue'", actualVal:'blue'}
-    {displayVal:"'green'", actualVal:'green'},     {displayVal:"'color'", actualVal:'color'}
+    {displayVal:"'green'", actualVal:'green'},     {displayVal:"'color'", actualVal:'color'},
+    {displayVal:"'color_random'", actualVal:'color_random'}
   ]
 
   $scope.glyph_types = ['annular_wedge', 'annulus', 'arc', 'asterisk', 'circle', 'line', 'triangle', 'square_cross']
@@ -19,7 +20,9 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
     {displayVal:"'y_sin'", actualVal:'y_sin'},
     {displayVal:"'x_random'", actualVal:'x_random'},
     {displayVal:"'y_random'", actualVal:'y_random'},
-    {displayVal:"'color'", acutalVal:'color'}]
+    {displayVal:"'color'", acutalVal:'color'},
+    {displayVal:"'color_random'", acutalVal:'color_random'}]
+    
 
 
 
@@ -48,18 +51,21 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
 
     y_sin = (Math.sin(x) for x in x_trig)
     color = ("rgb(#{ Math.floor(155+100*val) }, #{ Math.floor(100+50*val) }, #{ Math.floor(150-50*val) })" for val in y_sin)
+
     NR = 10
     x_random = (r.randf()*2 for i in _.range(NR))
     y_random = (r.randf()*2 for i in _.range(NR))
     xs = (r.randf()*2 for i in _.range(N))
     ys = (r.randf()*2 for i in _.range(N))
-
+    c_random = (r.randf() for i in _.range(100))
+    color_random = ("rgb(#{ Math.floor(255*val) }, #{ Math.floor(255*val) }, #{ Math.floor(255*val) })" for val in c_random)
     data = {
       x_trig: x_trig
       y_sin: y_sin
       x_random: x_random
       y_random: y_random
       color: color
+      color_random: color_random
       x: xs
       y: ys
     }
