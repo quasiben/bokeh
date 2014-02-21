@@ -25,9 +25,8 @@ define [
 
       new_cols = []
       for c in  @mget_obj('data_source').get('columns')
-        new_cols.push({colName:c, renderered:false})
+        new_cols.push({colName:c, renderered:false, colDisplayName:c})
       @mset('columns', new_cols)
-      console.log("_activated 1212")
       @render()
 
     events:
@@ -43,7 +42,6 @@ define [
 
     render: ->
       @template_context = _.template(@template)
-      console.log(@model.toJSON())
       @$el.html(@template_context(@model.toJSON()));
       return this;
 
@@ -57,7 +55,7 @@ define [
                       name='<%= column_data.colName %>' 
                       <%= (! column_data.rendered || 'checked') %> 
                       type='checkbox' />
-              <label> <%= column_data.colName %> </label>
+              <label> <%= column_data.colDisplayName %> </label>
             </li>
           <% }) %>
         </div>
@@ -69,7 +67,6 @@ define [
       removed = _.difference(old_colNames, new_colNames)
 
       for r in removed
-
         @unrender_column(r)
 
       for col in new_columns
@@ -105,8 +102,9 @@ define [
       renderers = rmap[rname]
       delete rmap[rname]
       @_reset_legends()
-      for r in renderers
-        @unrender_(r)
+      if renderers?
+        for r in renderers
+          @unrender_(r)
 
     _add_renderer: (renderer_name, glyph_specs) ->
       Plotting = require("common/plotting")
@@ -161,6 +159,9 @@ define [
       pview = @plot_view
       pmodel = @plot_view.model
       existing_renderers = pmodel.get('renderers')
+      if not existing_renderers?
+        return
+  
       modified_renderers = []
       for r in existing_renderers
         if not (r.id == renderer.id)
@@ -188,7 +189,7 @@ define [
 
     defaults: () ->
       rect_base = {
-        width: 5, type: 'circle', width_units: 'screen', height: 5, size:5,
+        width: 5, type: 'rect', width_units: 'screen', height: 5, size:5,
         height_units: 'screen', fill_color: 'blue', line_color: 'blue'}
       circle_base = {
         type:'line', radius:5, radius_units:'screen',
@@ -201,7 +202,7 @@ define [
         api_endpoint: "",
         legend_renderer : null
         glyph_specs: [
-          _.defaults({fill_color: 'orange', line_color: 'orange'}, circle_base),
+          #_.defaults({fill_color: 'orange', line_color: 'orange'}, circle_base),
           _.defaults({fill_color: 'blue', line_color: 'blue'}, rect_base),
           _.defaults({fill_color: 'red', line_color: 'red'}, rect_base),
           _.defaults({fill_color: 'green', line_color: 'green'}, rect_base),
