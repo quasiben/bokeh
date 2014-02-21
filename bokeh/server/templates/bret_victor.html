@@ -4,11 +4,13 @@
   <meta charset="utf-8">
   <title>Google Phone Gallery</title>
 
+<!--
 
-  <script data-main="http://localhost:5006/bokehjs/static/js/main" src='http://localhost:5006/bokehjs/static/js/vendor/requirejs/require.js'>
-
-</script>
+  <script src='http://localhost:5006/bokehjs/static/js/bokeh.js'></script>
+-->
+  <script data-main="http://localhost:5006/bokehjs/static/js/main" src='http://localhost:5006/bokehjs/static/js/vendor/requirejs/require.js'></script>
   <script src="/bokehjs/static/js/config.js"></script>
+
   <script src="/static/lib/js/angular/angular.js"></script>
   <script src="/bokehjs/static/demo/js/bret_victor_controller.js"></script>
 </head>
@@ -23,9 +25,10 @@
   <pre>
     var rects = {
       type: <select ng-model="glyph_type" ng-options="g for g in glyph_types"></select>
-      x: 'x',
-      y: 'y',
+      x: <select ng-model="xcolumn" ng-options="c.displayVal for c in data_columns"></select>
+      y: <select ng-model="ycolumn" ng-options="c.displayVal for c in data_columns"></select>
       size:         <input ng-model="size">
+      radius:         <input ng-model="radius">
       inner_radius:  <input ng-model="inner_radius">
       outer_radius:  <input ng-model="outer_radius">
       start_angle:   <input ng-model="start_angle">

@@ -10,13 +10,26 @@ bretVictorApp.config(($interpolateProvider) ->
 
 bretVictorApp.controller('PhoneListCtrl', ($scope) ->
   $scope.colors = [{displayVal:"'red'", actualVal:'red'},  {displayVal:"'blue'", actualVal:'blue'}
-    {displayVal:"'green'", actualVal:'green'}
+    {displayVal:"'green'", actualVal:'green'},     {displayVal:"'color'", actualVal:'color'}
   ]
 
-  $scope.glyph_types = ['annular_wedge', 'triangle', 'square_cross']
+  $scope.glyph_types = ['annular_wedge', 'annulus', 'arc', 'asterisk', 'circle', 'line', 'triangle', 'square_cross']
+  $scope.data_columns = [
+    {displayVal:"'x_trig'", actualVal:'x_trig'},
+    {displayVal:"'y_sin'", actualVal:'y_sin'},
+    {displayVal:"'x_random'", actualVal:'x_random'},
+    {displayVal:"'y_random'", actualVal:'y_random'},
+    {displayVal:"'color'", acutalVal:'color'}]
+
+
+
+  $scope.xcolumn = $scope.data_columns[2];
+  $scope.ycolumn = $scope.data_columns[3];
+  
   $scope.glyph_type = $scope.glyph_types[1];
 
   $scope.size =  10
+  $scope.radius =  .5
   $scope.inner_radius = .1
   $scope.outer_radius = .5
 
@@ -28,29 +41,36 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
   $scope.fill_color = $scope.colors[0];
   $scope.line_color = $scope.colors[1];
 
-
-  require(['main', 'underscore'], (Bokeh, _) ->
-    N= 630
-    N= 10
+  plot_f = (Bokeh, _)->
+    N= 600
     r = new Bokeh.Random(123456789)
+    x_trig = ( (x/50) for x in _.range(N) )
 
-
-    xs = ( (x/50) for x in _.range(N) )
-    ys = (Math.sin(x) for x in xs)
-    color = ("rgb(#{ Math.floor(155+100*val) }, #{ Math.floor(100+50*val) }, #{ Math.floor(150-50*val) })" for val in ys)
+    y_sin = (Math.sin(x) for x in x_trig)
+    color = ("rgb(#{ Math.floor(155+100*val) }, #{ Math.floor(100+50*val) }, #{ Math.floor(150-50*val) })" for val in y_sin)
+    NR = 10
+    x_random = (r.randf()*2 for i in _.range(NR))
+    y_random = (r.randf()*2 for i in _.range(NR))
     xs = (r.randf()*2 for i in _.range(N))
     ys = (r.randf()*2 for i in _.range(N))
 
     data = {
+      x_trig: x_trig
+      y_sin: y_sin
+      x_random: x_random
+      y_random: y_random
+      color: color
       x: xs
       y: ys
-      color: color
     }
 
     rects = {
       type: $scope.glyph_type,
-      x: 'x'
-      y: 'y'
+      x: $scope.xcolumn.actualVal
+      y: $scope.ycolumn.actualVal
+      #x: 'x_random'
+      #y: 'y_random'
+      radius: $scope.radius
       size:          $scope.size
       inner_radius:   $scope.inner_radius
       outer_radius:    $scope.outer_radius
@@ -81,8 +101,8 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
       console.log('annular_wedge.id', annular_wedge.id)
       annular_wedge.set('glyphspec', new_glyphspec)
 
-
-    $scope.$watch('glyph_type',  ->
+    update_glyphtype = () ->
+      
       g_spec = annular_wedge.get('glyphspec')
       g_spec.type=$scope.glyph_type
       dsource = annular_wedge.get_obj('data_source')
@@ -90,9 +110,20 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
       
       plot.remove_renderer(annular_wedge.ref())
       plot.add_renderers([new_glyph.ref()])
-      annular_wedge = new_glyph)
+      annular_wedge = new_glyph
+    
+    $scope.$watch('glyph_type', update_glyphtype)
+
+    $scope.$watch('xcolumn',  ->
+      update_glyphspec({x:$scope.xcolumn.actualVal})
+      update_glyphtype())
+
+    $scope.$watch('ycolumn',  ->
+      update_glyphspec({y:$scope.ycolumn.actualVal})
+      update_glyphtype())
     
     $scope.$watch('size',  -> update_glyphspec({size:parseFloat($scope.size)}))
+    $scope.$watch('radius',  -> update_glyphspec({radius:parseFloat($scope.radius)}))
 
     $scope.$watch('inner_radius',  -> update_glyphspec({inner_radius:parseFloat($scope.inner_radius)}))
     $scope.$watch('outer_radius',  -> update_glyphspec({outer_radius:parseFloat($scope.outer_radius)}))
@@ -105,10 +136,13 @@ bretVictorApp.controller('PhoneListCtrl', ($scope) ->
     
     $scope.$watch('fill_color',  -> update_glyphspec({fill_color:$scope.fill_color.actualVal}))
     $scope.$watch('line_color',  -> update_glyphspec({line_color:$scope.line_color.actualVal}))
-
-
-
     console.log("plot", plot);
 
-  ) 
+  
+
+  if require?
+    require(['main', 'underscore'], plot_f)
+  else
+    plot_f(Bokeh, _)
+  
 )
